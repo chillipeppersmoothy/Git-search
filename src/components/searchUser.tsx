@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./styles.css";
 import { useDispatch } from "react-redux";
-import { setSearchUser } from "../store/searchUser";
-import { GitHubUser } from "../interfaces";
+import { useNavigate } from "react-router-dom";
+import { getUser } from "../services";
+import { setUser } from "../store/searchUser";
+import "./styles.css";
 
 const SearchUser = () => {
   const [username, setUsername] = useState("");
@@ -16,13 +15,17 @@ const SearchUser = () => {
   const navigate = useNavigate();
 
   const handleGetUser = async () => {
-    const response = await axios.get<GitHubUser>(
-      `https://api.github.com/users/${username}`
-    );
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const response = await getUser(signal, username);
+
     if (response.status === 200) {
-      dispatch(setSearchUser(response.data));
-      navigate(`/users/user/${username}`);
+      dispatch(setUser(response.data));
+      navigate(`/Git-search/users/user/${username}`);
     }
+
+    controller.abort();
     return response;
   };
 
@@ -45,6 +48,7 @@ const SearchUser = () => {
       }, 3000);
     }
   }, [attempts, navigate]);
+
   return (
     <>
       <h3>Search User</h3>

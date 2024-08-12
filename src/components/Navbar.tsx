@@ -14,11 +14,14 @@ const Navbar = () => {
         <Link to={"/Git-search/"}>Repos</Link>
         <Link to={"/Git-search/users"}>Users</Link>
         <Link to={"/Git-search/search"}>Search</Link>
-        <Link to={"/Git-search/authProfile"}>Profile</Link>
+
         {!state.isLogged ? (
           <Link to={"/Git-search/login"}>Login</Link>
         ) : (
-          <Link to={"/Git-search/logout"}>Logout</Link>
+          <>
+            <Link to={"/Git-search/authProfile"}>Profile</Link>
+            <Link to={"/Git-search/logout"}>Logout</Link>
+          </>
         )}
       </div>
     </nav>

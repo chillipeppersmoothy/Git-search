@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { GitHubSearchResponse } from "../interfaces";
+import { getRepos } from "../services";
 import { RootState } from "../store";
-import { setRepos } from "../store/repos";
+import { markFetchDone, setRepos } from "../store/repos";
 import "./styles.css";
 
 const RepoList = () => {
@@ -12,16 +11,16 @@ const RepoList = () => {
   const state = useSelector((state: RootState) => state.repos);
 
   useEffect(() => {
+    if (state.fetchDone) {
+      return;
+    }
     const controller = new AbortController();
     const signal = controller.signal;
 
     const gitRepos = async () => {
-      const { data } = await axios.get<GitHubSearchResponse>(
-        "https://api.github.com/search/repositories?q=XXX",
-        { signal }
-      );
-      console.log("REPOS", data.items);
+      const { data } = await getRepos(signal);
       dispatch(setRepos(data.items));
+      dispatch(markFetchDone());
       return data;
     };
     gitRepos().catch((e) => console.error(e));
@@ -29,12 +28,12 @@ const RepoList = () => {
     return () => {
       controller.abort();
     };
-  }, [dispatch]);
+  }, [dispatch, state.fetchDone]);
 
   return (
     <div className="users-cont">
-      {state.length ? (
-        state.map((repo) => (
+      {state.data.length ? (
+        state.data.map((repo) => (
           <div className="user-card-cont" key={repo.id}>
             <img
               src={repo.owner.avatar_url}
@@ -54,7 +53,9 @@ const RepoList = () => {
               </Link>
             </div>
 
-            <Link to={`/repo-detail/${repo.name}/${repo.owner.login}`}>
+            <Link
+              to={`/Git-search/repo-detail/${repo.name}/${repo.owner.login}`}
+            >
               <button>View Repo</button>
             </Link>
           </div>

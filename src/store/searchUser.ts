@@ -40,12 +40,12 @@ const searchUserSlice = createSlice({
   name: "searchUser",
   initialState,
   reducers: {
-    setSearchUser: (state, action) => {
+    setUser: (state, action) => {
       state = action.payload;
       return state;
     },
   },
 });
 
-export const { setSearchUser } = searchUserSlice.actions;
+export const { setUser } = searchUserSlice.actions;
 export default searchUserSlice;

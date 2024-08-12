@@ -1,24 +1,32 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Repository } from "../interfaces";
+import { getRepoUser } from "../services";
 
 const RepoDetail = () => {
   const [gitRepoData, setGitRepoData] = useState<Repository>();
   const [cloneCopy, setCloneCopy] = useState(false);
-  const { name, username } = useParams();
+  const { name, username } = useParams<string>();
 
   useEffect(() => {
-    const getGitUser = async () => {
-      const { data } = await axios.get<Repository>(
-        `https://api.github.com/repos/${username}/${name}`
-      );
-      console.log("USER IS HERE", data);
-      setGitRepoData(data);
-      return data;
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    if (name && username) {
+      const getGitUser = async () => {
+        const { data } = await getRepoUser(signal, name, username);
+
+        setGitRepoData(data);
+        return data;
+      };
+      getGitUser().catch((e) => console.error(e));
+    } else {
+      console.error("name or username is missing");
+    }
+
+    return () => {
+      controller.abort();
     };
-    getGitUser().catch((e) => console.error(e));
   }, [username, name]);
   return (
     <div>
@@ -56,6 +64,7 @@ const RepoDetail = () => {
                     className="clone-url-inp"
                     type="text"
                     value={gitRepoData.clone_url}
+                    onChange={() => {}}
                   />
                   <button
                     onClick={() => {
@@ -63,18 +72,18 @@ const RepoDetail = () => {
                       setCloneCopy((isCopied) => !isCopied);
                       setTimeout(
                         () => setCloneCopy((isCopied) => !isCopied),
-                        3000
+                        10000
                       );
                     }}
                   >
-                    {cloneCopy ? "Copied" : "Clone"}
+                    {cloneCopy ? "Copied" : "Copy"}
                   </button>
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <h1>Loadin...</h1>
+          <h1>Loading...</h1>
         )}
       </div>
     </div>
